@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>Mochi 2048</title>
+  <link rel="icon" type="image/png" href="genlayer-logo.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-theme="mochi">
+  <div class="ambient ambient-one" aria-hidden="true"></div>
+  <div class="ambient ambient-two" aria-hidden="true"></div>
+  <div class="ambient ambient-three" aria-hidden="true"></div>
+
+  <div class="app-shell">
+    <header class="hero">
+      <div class="brand">
+        <img class="brand-logo" src="genlayer-logo.png" alt="GenLayer logo" />
+
+        <div class="brand-copy">
+          <p class="eyebrow">MOCHI ARCADE</p>
+          <h1>Mochi 2048</h1>
+          <p class="tagline">Soft tiles, sharp merges. Use arrow keys, WASD, or swipe.</p>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="pill">
+          <div class="label">Score</div>
+          <div id="score" class="value">0</div>
+        </div>
+
+        <div class="pill">
+          <div class="label">Best</div>
+          <div id="best" class="value">0</div>
+        </div>
+
+        <div class="pill selectPill">
+          <label class="label" for="sizeSelect">Board</label>
+          <select id="sizeSelect" class="select">
+            <option value="4">4x4</option>
+            <option value="5">5x5</option>
+            <option value="6">6x6</option>
+          </select>
+        </div>
+
+        <button id="undoBtn" class="btn ghost">Undo</button>
+        <button id="newGameBtn" class="btn primary">New Game</button>
+      </div>
+    </header>
+
+    <main class="play-grid">
+      <section class="board-panel">
+        <div class="board-frame">
+          <div class="board-header">
+            <div>
+              <p class="section-label">Sweet Spot</p>
+              <h2>Reach the MOCHI tile.</h2>
+            </div>
+
+            <p class="mini-note">Autosave stays on while you play.</p>
+          </div>
+
+          <div id="board" class="board" aria-label="2048 board">
+            <div id="bg" class="bg"></div>
+            <div id="tiles" class="tiles"></div>
+          </div>
+
+          <div id="overlay" class="overlay" hidden>
+            <div class="modal">
+              <h2 id="overlayTitle">Board Full</h2>
+              <p id="overlayText">There are no moves left.</p>
+
+              <div class="row">
+                <button id="tryAgainBtn" class="btn primary">Play Again</button>
+                <button id="keepPlayingBtn" class="btn ghost" hidden>Keep Going</button>
+              </div>
+
+              <hr class="sep" />
+
+              <div class="lbBox">
+                <div class="lbTop">
+                  <strong>Leaderboard</strong>
+                  <span class="muted" id="lbMeta">Top 10</span>
+                </div>
+
+                <div class="submitRow">
+                  <input id="nameInput" class="input" maxlength="20" placeholder="Your name" />
+                  <button id="submitScoreBtn" class="btn primary">Submit</button>
+                </div>
+
+                <div id="lbStatus" class="muted small"></div>
+                <ol id="leaderboard" class="lbList"></ol>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="side-panel">
+        <section class="info-card">
+          <p class="section-label">How It Plays</p>
+          <h2>Slide every tile at once and merge matching values.</h2>
+          <p>
+            Every move shifts the whole board. When two matching tiles collide, they fuse
+            into the next number and push your score higher.
+          </p>
+        </section>
+
+        <section class="info-card compact">
+          <p class="section-label">Controls</p>
+          <p>
+            Undo lets you walk back through your move history. Switching board size starts
+            a fresh round immediately.
+          </p>
+        </section>
+      </aside>
+    </main>
+
+    <footer class="foot">
+      <p class="hint">Leaderboard is now connected through Firebase Firestore.</p>
+    </footer>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
