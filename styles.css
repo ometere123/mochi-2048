@@ -609,9 +609,14 @@ body::before {
     flex-direction: column;
   }
 
+  .brand,
+  .controls {
+    flex: none;
+    width: 100%;
+  }
+
   .controls {
     justify-content: flex-start;
-    width: 100%;
   }
 
   .board-frame,
