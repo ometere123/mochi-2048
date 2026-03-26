@@ -66,7 +66,6 @@ let nextTileId = 1;
 
 let state = freshState(SIZE);
 const tileEls = new Map();
-const tileRevealTimers = new Map();
 
 function normalizeSize(value) {
   return [4, 5, 6].includes(value) ? value : 4;
@@ -134,88 +133,8 @@ function sanitizeHistory(rawHistory) {
     }));
 }
 
-function findTileById(tileId) {
-  for (let r = 0; r < SIZE; r += 1) {
-    for (let c = 0; c < SIZE; c += 1) {
-      const tile = state.grid[r][c];
-      if (tile?.id === tileId) return tile;
-    }
-  }
-
-  return null;
-}
-
-function clearTileRevealTimer(tileId) {
-  const timerId = tileRevealTimers.get(tileId);
-  if (!timerId) return;
-
-  clearTimeout(timerId);
-  tileRevealTimers.delete(tileId);
-}
-
-function clearAllTileRevealTimers() {
-  for (const tileId of tileRevealTimers.keys()) {
-    clearTileRevealTimer(tileId);
-  }
-}
-
 function shouldShowMochiImage(tile) {
-  return tile.v === 2048 && tile.showMochiImage;
-}
-
-function scheduleMochiReveal(tile) {
-  clearTileRevealTimer(tile.id);
-
-  if (tile.v !== 2048 || tile.showMochiImage || !tile.mochiRevealAt) {
-    return;
-  }
-
-  const delay = Math.max(tile.mochiRevealAt - Date.now(), 0);
-  const timerId = setTimeout(() => {
-    const liveTile = findTileById(tile.id);
-    if (!liveTile || liveTile.v !== 2048) {
-      clearTileRevealTimer(tile.id);
-      return;
-    }
-
-    liveTile.showMochiImage = true;
-    saveGame();
-    renderAll();
-  }, delay);
-
-  tileRevealTimers.set(tile.id, timerId);
-}
-
-function syncMochiTile(tile) {
-  if (tile.v !== 2048) {
-    if (tile.mochiRevealAt || tile.showMochiImage) {
-      delete tile.mochiRevealAt;
-      delete tile.showMochiImage;
-    }
-    clearTileRevealTimer(tile.id);
-    return false;
-  }
-
-  let changed = false;
-  const now = Date.now();
-
-  if (!tile.mochiRevealAt && !tile.showMochiImage) {
-    tile.mochiRevealAt = now + 5000;
-    changed = true;
-  }
-
-  if (!tile.showMochiImage && tile.mochiRevealAt && now >= tile.mochiRevealAt) {
-    tile.showMochiImage = true;
-    changed = true;
-  }
-
-  if (tile.showMochiImage) {
-    clearTileRevealTimer(tile.id);
-  } else {
-    scheduleMochiReveal(tile);
-  }
-
-  return changed;
+  return tile.v === 2048;
 }
 
 function randInt(max) {
@@ -368,6 +287,10 @@ function updateTileEl(tile, { isNew = false, isMerged = false } = {}) {
     image.src = MOCHI_TILE_IMAGE;
     image.alt = "Mochi 2048 tile";
     image.draggable = false;
+    image.addEventListener("error", () => {
+      element.classList.remove("has-image");
+      element.textContent = "2048";
+    }, { once: true });
     element.appendChild(image);
   } else {
     element.textContent = formatTileLabel(tile.v);
@@ -388,7 +311,6 @@ function updateTileEl(tile, { isNew = false, isMerged = false } = {}) {
 function removeMissingTiles(liveIds) {
   for (const [id, element] of tileEls.entries()) {
     if (!liveIds.has(id)) {
-      clearTileRevealTimer(id);
       element.remove();
       tileEls.delete(id);
     }
@@ -419,14 +341,12 @@ function renderAll({ newTileIds = new Set(), mergedTileIds = new Set() } = {}) {
   setBoardVars();
 
   const liveIds = new Set();
-  let stateChanged = false;
   for (let r = 0; r < SIZE; r += 1) {
     for (let c = 0; c < SIZE; c += 1) {
       const tile = state.grid[r][c];
       if (!tile) continue;
 
       liveIds.add(tile.id);
-      stateChanged = syncMochiTile(tile) || stateChanged;
       updateTileEl(tile, {
         isNew: newTileIds.has(tile.id),
         isMerged: mergedTileIds.has(tile.id)
@@ -435,9 +355,6 @@ function renderAll({ newTileIds = new Set(), mergedTileIds = new Set() } = {}) {
   }
 
   removeMissingTiles(liveIds);
-  if (stateChanged) {
-    saveGame();
-  }
   renderHUD();
 }
 
@@ -494,7 +411,6 @@ function hasMoves() {
 function undo() {
   if (history.length === 0) return;
   const previousSnapshot = history.pop();
-  clearAllTileRevealTimers();
   restoreHistorySnapshot(previousSnapshot);
   sizeSelect.value = String(SIZE);
   renderBackground();
@@ -612,7 +528,6 @@ function move(direction) {
 }
 
 function newGame() {
-  clearAllTileRevealTimers();
   history = [];
   state = freshState(SIZE);
   renderBackground();

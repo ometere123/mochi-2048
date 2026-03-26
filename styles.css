@@ -430,14 +430,15 @@ body::before {
 }
 
 .tile.has-image {
-  padding: 6px;
+  padding: 0;
   background: linear-gradient(135deg, var(--white) 0%, var(--blue) 44%, var(--lavender) 100%);
 }
 
 .tile-image {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  display: block;
+  object-fit: cover;
   pointer-events: none;
   user-select: none;
 }
